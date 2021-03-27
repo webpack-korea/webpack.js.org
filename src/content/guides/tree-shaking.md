@@ -16,9 +16,8 @@ contributors:
   - EugeneHlushko
   - AnayaDesign
   - torifat
+  - rahul3v
 related:
-  - title: "webpack 4 beta — try it today!"
-    url: https://medium.com/webpack/webpack-4-beta-try-it-today-6b1d27d7d7e2#9a67
   - title: Debugging Optimization Bailouts
     url: https://webpack.js.org/plugins/module-concatenation-plugin/#debugging-optimization-bailouts
   - title: Issue 6074 - Add support for more complex selectors for sideEffects
@@ -31,14 +30,13 @@ The webpack 2 release came with built-in support for ES2015 modules (alias _harm
 
 T> The remainder of this guide will stem from [Getting Started](/guides/getting-started). If you haven't read through that guide already, please do so now.
 
-
 ## Add a Utility
 
 Let's add a new utility file to our project, `src/math.js`, that exports two functions:
 
-__project__
+**project**
 
-``` diff
+```diff
 webpack-demo
 |- package.json
 |- webpack.config.js
@@ -51,7 +49,7 @@ webpack-demo
 |- /node_modules
 ```
 
-__src/math.js__
+**src/math.js**
 
 ```javascript
 export function square(x) {
@@ -65,9 +63,9 @@ export function cube(x) {
 
 Set the `mode` configuration option to [development](/configuration/mode/#mode-development) to make sure that the bundle is not minified:
 
-__webpack.config.js__
+**webpack.config.js**
 
-``` diff
+```diff
 const path = require('path');
 
 module.exports = {
@@ -85,9 +83,9 @@ module.exports = {
 
 With that in place, let's update our entry script to utilize one of these new methods and remove `lodash` for simplicity:
 
-__src/index.js__
+**src/index.js**
 
-``` diff
+```diff
 - import _ from 'lodash';
 + import { cube } from './math.js';
 
@@ -108,13 +106,13 @@ __src/index.js__
   document.body.appendChild(component());
 ```
 
-Note that we __did not `import` the `square` method__ from the `src/math.js` module. That function is what's known as "dead code", meaning an unused `export` that should be dropped. Now let's run our npm script, `npm run build`, and inspect the output bundle:
+Note that we **did not `import` the `square` method** from the `src/math.js` module. That function is what's known as "dead code", meaning an unused `export` that should be dropped. Now let's run our npm script, `npm run build`, and inspect the output bundle:
 
-__dist/bundle.js (around lines 90 - 100)__
+**dist/bundle.js (around lines 90 - 100)**
 
 ```js
 /* 1 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
+/***/ (function (module, __webpack_exports__, __webpack_require__) {
   'use strict';
   /* unused harmony export square */
   /* harmony export (immutable) */ __webpack_exports__['a'] = cube;
@@ -129,7 +127,6 @@ __dist/bundle.js (around lines 90 - 100)__
 ```
 
 Note the `unused harmony export square` comment above. If you look at the code below it, you'll notice that `square` is not being imported, however, it is still included in the bundle. We'll fix that in the next section.
-
 
 ## Mark the file as side-effect-free
 
@@ -153,23 +150,18 @@ If your code did have some side effects though, an array can be provided instead
 ```json
 {
   "name": "your-project",
-  "sideEffects": [
-    "./src/some-side-effectful-file.js"
-  ]
+  "sideEffects": ["./src/some-side-effectful-file.js"]
 }
 ```
 
-The array accepts relative, absolute, and glob patterns to the relevant files. It uses [micromatch](https://github.com/micromatch/micromatch#matching-features) under the hood.
+The array accepts simple glob patterns to the relevant files. It uses [glob-to-regexp](https://github.com/fitzgen/glob-to-regexp) under the hood (Supports: `*`, `**`, `{a,b}`, `[a-z]`). Patterns like `*.css`, which do not include a `/`, will be treated like `**/*.css`.
 
 T> Note that any imported file is subject to tree shaking. This means if you use something like `css-loader` in your project and import a CSS file, it needs to be added to the side effect list so it will not be unintentionally dropped in production mode:
 
 ```json
 {
   "name": "your-project",
-  "sideEffects": [
-    "./src/some-side-effectful-file.js",
-    "*.css"
-  ]
+  "sideEffects": ["./src/some-side-effectful-file.js", "*.css"]
 }
 ```
 
@@ -179,9 +171,9 @@ Finally, `"sideEffects"` can also be set from the [`module.rules` configuration 
 
 The [`sideEffects`](/configuration/optimization/#optimizationsideeffects) and [`usedExports`](/configuration/optimization/#optimizationusedexports) (more known as tree shaking) optimizations are two different things.
 
-__`sideEffects` is much more effective__ since it allows to skip whole modules/files and the complete subtree.
+**`sideEffects` is much more effective** since it allows to skip whole modules/files and the complete subtree.
 
-`usedExports` relies on [terser](https://github.com/terser-js/terser) to detect side effects in statements. It is a difficult task in JavaScript and not as effective as straighforward `sideEffects` flag. It also can't skip subtree/dependencies since the spec says that side effects need to be evaluated. While exporting function works fine, React's Higher Order Components (HOC) are problematic in this regard.
+`usedExports` relies on [terser](https://github.com/terser-js/terser) to detect side effects in statements. It is a difficult task in JavaScript and not as effective as straightforward `sideEffects` flag. It also can't skip subtree/dependencies since the spec says that side effects need to be evaluated. While exporting function works fine, React's Higher Order Components (HOC) are problematic in this regard.
 
 Let's make an example:
 
@@ -201,7 +193,11 @@ function Button(_ref) {
 function merge() {
   var _final = {};
 
-  for (var _len = arguments.length, objs = new Array(_len), _key = 0; _key < _len; _key++) {
+  for (
+    var _len = arguments.length, objs = new Array(_len), _key = 0;
+    _key < _len;
+    _key++
+  ) {
     objs[_key] = arguments[_key];
   }
 
@@ -216,13 +212,15 @@ function merge() {
 function withAppProvider() {
   return function addProvider(WrappedComponent) {
     var WithProvider =
-    /*#__PURE__*/
-    function (_React$Component) {
-      // ...
-      return WithProvider;
-    }(Component);
+      /*#__PURE__*/
+      (function (_React$Component) {
+        // ...
+        return WithProvider;
+      })(Component);
 
-    WithProvider.contextTypes = WrappedComponent.contextTypes ? merge(WrappedComponent.contextTypes, polarisAppProviderContextTypes) : polarisAppProviderContextTypes;
+    WithProvider.contextTypes = WrappedComponent.contextTypes
+      ? merge(WrappedComponent.contextTypes, polarisAppProviderContextTypes)
+      : polarisAppProviderContextTypes;
     var FinalComponent = hoistStatics(WithProvider, WrappedComponent);
     return FinalComponent;
   };
@@ -232,7 +230,7 @@ var Button$1 = withAppProvider()(Button);
 
 export {
   // ...,
-  Button$1
+  Button$1,
 };
 ```
 
@@ -242,7 +240,9 @@ Terser actually tries to figure it out, but it doesn't know for sure in many cas
 
 But we can help terser by using the `/*#__PURE__*/` annotation. It flags a statement as side effect free. So a simple change would make it possible to tree-shake the code:
 
-`var Button$1 = /*#__PURE__*/ withAppProvider()(Button);`
+```javascript
+var Button$1 = /*#__PURE__*/ withAppProvider()(Button);
+```
 
 This would allow to remove this piece of code. But there are still questions with the imports which need to be included/evaluated because they could contain side effects.
 
@@ -252,7 +252,7 @@ It's similar to `/*#__PURE__*/` but on a module level instead of a statement lev
 
 In the Shopify's Polaris example, original modules look like this:
 
-__index.js__
+**index.js**
 
 ```javascript
 import './configure';
@@ -260,17 +260,17 @@ export * from './types';
 export * from './components';
 ```
 
-__components/index.js__
+**components/index.js**
 
 ```javascript
 // ...
 export { default as Breadcrumbs } from './Breadcrumbs';
-export { default as Button, buttonFrom, buttonsFrom, } from './Button';
+export { default as Button, buttonFrom, buttonsFrom } from './Button';
 export { default as ButtonGroup } from './ButtonGroup';
 // ...
 ```
 
-__package.json__
+**package.json**
 
 ```json
 // ...
@@ -308,14 +308,14 @@ In this case only 4 modules are included into the bundle:
 
 After this optimization, other optimizations can still apply. For example: `buttonFrom` and `buttonsFrom` exports from `Button.js` are unused too. `usedExports` optimization will pick it up and terser may be able to drop some statements from the module.
 
-Module Concatenation also applies. So that these 4 modules plus the entry module (and probably more dependencies) can be concatenated. __`index.js` has no code generated in the end__.
+Module Concatenation also applies. So that these 4 modules plus the entry module (and probably more dependencies) can be concatenated. **`index.js` has no code generated in the end**.
 
 ## Mark a function call as side-effect-free
 
 It is possible to tell webpack that a function call is side-effect-free (pure) by using the `/*#__PURE__*/` annotation. It can be put in front of function calls to mark them as side-effect-free. Arguments passed to the function are not being marked by the annotation and may need to be marked individually. When the initial value in a variable declaration of an unused variable is considered as side-effect-free (pure), it is getting marked as dead code, not executed and dropped by the minimizer.
 This behavior is enabled when [`optimization.innerGraph`](/configuration/optimization/#optimizationinnergraph) is set to `true`.
 
-__file.js__
+**file.js**
 
 ```javascript
 /*#__PURE__*/ double(55);
@@ -325,9 +325,9 @@ __file.js__
 
 So we've cued up our "dead code" to be dropped by using the `import` and `export` syntax, but we still need to drop it from the bundle. To do that, set the `mode` configuration option to [`production`](/configuration/mode/#mode-production).
 
-__webpack.config.js__
+**webpack.config.js**
 
-``` diff
+```diff
 const path = require('path');
 
 module.exports = {

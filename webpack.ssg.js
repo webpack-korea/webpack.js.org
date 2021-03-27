@@ -1,7 +1,8 @@
 // Import External Dependencies
 const WebpackPwaManifest = require('webpack-pwa-manifest');
 const path = require('path');
-const merge = require('webpack-merge');
+const { merge } = require('webpack-merge');
+const OptimizeCSSAssetsPlugin = require('css-minimizer-webpack-plugin');
 const SSGPlugin = require('static-site-generator-webpack-plugin');
 const RedirectWebpackPlugin = require('redirect-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
@@ -12,47 +13,55 @@ const contentTree = require('./src/_content.json');
 const common = require('./webpack.common.js');
 
 // content tree to path array
-const paths = [
-  ...flattenContentTree(contentTree),
-  '/vote',
-  '/organization',
-  '/starter-kits',
-  '/app-shell'
-];
+const paths = [...flattenContentTree(contentTree), '/vote', '/app-shell'];
 
-module.exports = env => merge(common(env), {
+module.exports = (env) =>
+  merge(common(env), {
+    name: 'ssg',
     mode: 'production',
     target: 'node',
+    cache: {
+      buildDependencies: {
+        config: [__filename],
+      },
+    },
+    module: {
+      parser: {
+        javascript: {
+          url: 'relative',
+        },
+      },
+    },
     entry: {
-      index: './server.jsx'
+      index: './server.jsx',
     },
     output: {
-      filename: 'server.[name].js',
-      libraryTarget: 'umd'
+      filename: '.server/[name].[contenthash].js',
+      libraryTarget: 'umd',
     },
     optimization: {
-        splitChunks: false
+      minimizer: [new OptimizeCSSAssetsPlugin({})],
     },
     plugins: [
       new SSGPlugin({
         globals: {
           window: {
-            __ssgrun: true
-          }
+            __ssgrun: true,
+          },
         },
         paths,
         locals: {
-          content: contentTree
-        }
+          content: contentTree,
+        },
       }),
       new RedirectWebpackPlugin({
         redirects: {
-          'support': '/contribute/',
+          support: '/contribute/',
           'writers-guide': '/contribute/writers-guide/',
           'get-started': '/guides/getting-started/',
           'get-started/install-webpack': '/guides/installation/',
           'get-started/why-webpack': '/guides/why-webpack/',
-          'pluginsapi': '/api/plugins/',
+          pluginsapi: '/api/plugins/',
           'pluginsapi/compiler': '/api/compiler-hooks/',
           'pluginsapi/template': '/api/template/',
           'api/passing-a-config': '/configuration/configuration-types/',
@@ -63,7 +72,7 @@ module.exports = env => merge(common(env), {
           'api/plugins/tapable': '/api/tapable/',
           'api/plugins/template': '/api/template/',
           'api/plugins/resolver': '/api/resolver/',
-          'development': '/contribute/',
+          development: '/contribute/',
           'development/plugin-patterns': '/contribute/plugin-patterns/',
           'development/release-process': '/contribute/release-process/',
           'development/how-to-write-a-loader': '/contribute/writing-a-loader/',
@@ -74,27 +83,32 @@ module.exports = env => merge(common(env), {
           'guides/code-splitting-css': '/guides/code-splitting/',
           'guides/code-splitting-libraries': '/guides/code-splitting/',
           'guides/why-webpack': '/comparison/',
+          'guides/scaffolding': '/api/cli/#init',
           'guides/production-build': '/guides/production/',
-          'migrating': '/migrate/3/',
-          'plugins/no-emit-on-errors-plugin': '/configuration/optimization/#optimizationnoemitonerrors',
-          'concepts/mode': '/configuration/mode'
-        }
+          migrating: '/migrate/3/',
+          'plugins/no-emit-on-errors-plugin':
+            '/configuration/optimization/#optimizationemitonerrors',
+          'concepts/mode': '/configuration/mode',
+          'contribute/writing-a-scaffold': '/api/cli/#init',
+        },
       }),
-      new CopyWebpackPlugin([
-        {
-          from: './assets/icon-square-small-slack.png',
-          to: './assets/'
-        },
-        {
-          from: './assets/icon-square-big.svg',
-          to: './assets/'
-        },
-        {
-          from: './assets/robots.txt',
-          to: './'
-        },
-        'CNAME'
-      ]),
+      new CopyWebpackPlugin({
+        patterns: [
+          {
+            from: './assets/icon-square-small-slack.png',
+            to: './assets/',
+          },
+          {
+            from: './assets/icon-square-big.svg',
+            to: './assets/',
+          },
+          {
+            from: './assets/robots.txt',
+            to: './',
+          },
+          'CNAME',
+        ],
+      }),
       new WebpackPwaManifest({
         name: 'webpack Documentation',
         short_name: 'webpack',
@@ -120,5 +134,5 @@ module.exports = env => merge(common(env), {
           },
         ],
       }),
-    ]
+    ],
   });

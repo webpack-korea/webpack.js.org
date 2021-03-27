@@ -19,7 +19,6 @@ new webpack.BannerPlugin(banner);
 new webpack.BannerPlugin(options);
 ```
 
-
 ## Options
 
 <!-- eslint-skip -->
@@ -29,29 +28,29 @@ new webpack.BannerPlugin(options);
   banner: string | function, // the banner as string or function, it will be wrapped in a comment
   raw: boolean, // if true, banner will not be wrapped in a comment
   entryOnly: boolean, // if true, the banner will only be added to the entry chunks
-  test: string | RegExp | [string, RegExp],
-  include: string | RegExp | [string, RegExp],
-  exclude: string | RegExp | [string, RegExp],
+  test: string | RegExp | [string, RegExp], // Include all modules that pass test assertion.
+  include: string | RegExp | [string, RegExp], // Include all modules matching any of these conditions.
+  exclude: string | RegExp | [string, RegExp], // Exclude all modules matching any of these conditions.
 }
 ```
 
 ## Usage
-
 
 ```javascript
 import webpack from 'webpack';
 
 // string
 new webpack.BannerPlugin({
-  banner: 'hello world'
+  banner: 'hello world',
 });
 
 // function
 new webpack.BannerPlugin({
-  banner: (yourVariable) => { return `yourVariable: ${yourVariable}`; }
+  banner: (yourVariable) => {
+    return `yourVariable: ${yourVariable}`;
+  },
 });
 ```
-
 
 ## Placeholders
 
@@ -61,6 +60,7 @@ Since webpack 2.5.0, placeholders are evaluated in the `banner` string:
 import webpack from 'webpack';
 
 new webpack.BannerPlugin({
-  banner: 'hash:[hash], chunkhash:[chunkhash], name:[name], filebase:[filebase], query:[query], file:[file]'
+  banner:
+    'fullhash:[fullhash], chunkhash:[chunkhash], name:[name], filebase:[filebase], query:[query], file:[file]',
 });
 ```

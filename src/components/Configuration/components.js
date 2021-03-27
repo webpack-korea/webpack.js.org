@@ -1,13 +1,13 @@
-import React from 'react';
+import { isValidElement, Component } from 'react';
 import Popover from 'react-tiny-popover';
 import './Configuration.scss';
-import { timeout } from 'q';
+import PropTypes from 'prop-types';
 
 const DEFAULT_CHILDREN_SIZE = 4;
 
-const isFirstChild = child => typeof child === 'string' && child !== ' ';
+const isFirstChild = (child) => typeof child === 'string' && child !== ' ';
 
-const removeSpaces = child => (isFirstChild(child) ? child.trim() : child);
+const removeSpaces = (child) => (isFirstChild(child) ? child.trim() : child);
 
 const addLink = (child, i, url) => {
   return isFirstChild(child) ? (
@@ -18,7 +18,6 @@ const addLink = (child, i, url) => {
     child
   );
 };
-
 const Card = ({ body }) => {
   return (
     <div className="markdown">
@@ -28,43 +27,19 @@ const Card = ({ body }) => {
     </div>
   );
 };
-
-export class Details extends React.Component {
+Card.propTypes = {
+  body: PropTypes.node,
+};
+export class Details extends Component {
+  static propTypes = {
+    url: PropTypes.string,
+    myChilds: PropTypes.arrayOf(PropTypes.node),
+  };
   constructor(props) {
     super(props);
     this.state = {
       open: false,
-      summary: null,
-      content: null
     };
-  }
-
-  componentDidMount() {
-    const { children, url } = this.props;
-
-    // Find the index of </default>
-    const closeDefaultTagIndex = children.findIndex(child => {
-      if (React.isValidElement(child)) {
-        return (
-          child.props.props.className.includes('tag') &&
-          child.props.children.length === DEFAULT_CHILDREN_SIZE
-        );
-      }
-    });
-
-    // Summary is the part of the snippet that would be shown in the code snippet,
-    // to get it we need to cut the <default></default> enclosing tags
-    const summary = children
-      .splice(2, closeDefaultTagIndex - 3)
-      .map(removeSpaces)
-      .map((child, i) => addLink(child, i, url));
-
-    children.splice(0, DEFAULT_CHILDREN_SIZE); // Remove <default></default> information
-
-    this.setState({
-      summary,
-      content: children
-    });
   }
 
   clickOutsideHandler = () => {
@@ -76,7 +51,30 @@ export class Details extends React.Component {
   };
 
   render() {
-    const { open, summary, content } = this.state;
+    const { myChilds, url } = this.props;
+
+    // Find the index of </default>
+    const closeDefaultTagIndex = myChilds.findIndex((child) => {
+      if (isValidElement(child)) {
+        return (
+          child.props.className.includes('tag') &&
+          child.props.children.length === DEFAULT_CHILDREN_SIZE
+        );
+      }
+    });
+
+    const content = myChilds.slice();
+
+    // Summary is the part of the snippet that would be shown in the code snippet,
+    // to get it we need to cut the <default></default> enclosing tags
+    const summary = content
+      .splice(2, closeDefaultTagIndex - 3)
+      .map(removeSpaces)
+      .map((child, i) => addLink(child, i, url));
+
+    content.splice(0, DEFAULT_CHILDREN_SIZE); // Remove <default></default> information
+
+    const { open } = this.state;
     return (
       <Popover
         isOpen={open}
@@ -87,7 +85,7 @@ export class Details extends React.Component {
         content={<Card body={content} />}
       >
         <span
-          className='code-details-summary-span'
+          className="code-details-summary-span"
           onClick={this.toggleVisibility}
         >
           {summary}

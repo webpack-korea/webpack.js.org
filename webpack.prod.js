@@ -1,37 +1,51 @@
 // Import External Dependencies
-const merge = require('webpack-merge');
-const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
-const TerserJSPlugin = require('terser-webpack-plugin');
-const OfflinePlugin = require('offline-plugin');
+const { merge } = require('webpack-merge');
+const OptimizeCSSAssetsPlugin = require('css-minimizer-webpack-plugin');
+const { InjectManifest } = require('workbox-webpack-plugin');
+const path = require('path');
 
 // Load Common Configuration
 const common = require('./webpack.common.js');
 
-// find [css, ico, svg] versioned (hashed) files emitted by SSG run
-const hashedAssetsBySSGRun = require('./src/utilities/find-files-in-dist')(['.css', '.ico', '.svg']);
+const ProdAssetsManifest = require('./src/ProdAssetsManifest');
 
-module.exports = env => merge(common(env), {
-  mode: 'production',
-  target: 'web',
-  optimization: {
-    minimizer: [
-      new TerserJSPlugin({}),
-      new OptimizeCSSAssetsPlugin({})
-    ]
-  },
-  plugins: [
-    new OfflinePlugin({
-      autoUpdate: true,
-      publicPath: '/',
-      appShell: '/app-shell/',
-      responseStrategy: 'network-first',
-      // make sure to cache homepage and app shell as app shell for the rest of the pages.
-      // externals also re-validate on sw update (releases)
-      externals: ['/app-shell/', '/', '/manifest.json', ...hashedAssetsBySSGRun],
-      excludes: ['/icon_*.png', '/**/printable/', '/robots.txt'],
-      AppCache: {
-        publicPath: '/'
-      }
-    })
-  ]
-});
+module.exports = (env) =>
+  merge(common(env), {
+    mode: 'production',
+    cache: {
+      buildDependencies: {
+        config: [__filename],
+      },
+    },
+    entry: {
+      index: {
+        import: './index.jsx',
+        filename: 'index.[contenthash].js',
+      },
+    },
+    output: {
+      filename: '[name].[contenthash].js',
+    },
+    optimization: {
+      splitChunks: {
+        cacheGroups: {
+          vendors: {
+            test: /node_modules/,
+            chunks: 'initial',
+            enforce: true,
+            filename: 'vendor.[contenthash].js',
+          },
+        },
+      },
+      minimizer: ['...', new OptimizeCSSAssetsPlugin({})],
+    },
+    plugins: [
+      new InjectManifest({
+        swSrc: path.join(__dirname, 'src/sw.js'),
+        swDest: 'sw.js',
+        // exclude license
+        exclude: [/license\.txt/i],
+      }),
+      new ProdAssetsManifest(),
+    ],
+  });

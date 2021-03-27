@@ -4,6 +4,7 @@ sort: 6
 contributors:
   - EugeneHlushko
   - wizardofhogwarts
+  - chenxsan
 ---
 
 T> Available since webpack 4.39.0
@@ -24,20 +25,52 @@ Benefits of custom logging API in webpack:
 
 By introducing webpack logging API we hope to unify the way webpack plugins and loaders emit logs and allow better ways to inspect build problems. Integrated logging solution supports plugins and loaders developers by improving their development experience. Paves the way for non-CLI webpack solutions like dashboards or other UIs.
 
-W> __Avoid noise in the log!__ Keep in mind that multiple plugins and loaders are used together. Loaders are usually processing multiple files and are invoked for every file. Choose a logging level as low as possible to keep the log output informative.
+W> **Avoid noise in the log!** Keep in mind that multiple plugins and loaders are used together. Loaders are usually processing multiple files and are invoked for every file. Choose a logging level as low as possible to keep the log output informative.
+
+## Examples of how to get and use webpack logger in loaders and plugins
+
+**my-webpack-plugin.js**
+
+```js
+const PLUGIN_NAME = 'my-webpack-plugin';
+export class MyWebpackPlugin {
+  apply(compiler) {
+    // you can access Logger from compiler
+    const logger = compiler.getInfrastructureLogger(PLUGIN_NAME);
+    logger.log('log from compiler');
+
+    compiler.hooks.compilation.tap(PLUGIN_NAME, (compilation) => {
+      // you can also access Logger from compilation
+      const logger = compilation.getLogger(PLUGIN_NAME);
+      logger.info('log from compilation');
+    });
+  }
+}
+```
+
+**my-webpack-loader.js**
+
+```js
+module.exports = function (source) {
+  // you can get Logger with `this.getLogger` in your webpack loaders
+  const logger = this.getLogger('my-webpack-loader');
+  logger.info('hello Logger');
+  return source;
+};
+```
 
 ## Logger methods
 
 - `logger.error(...)`: for error messages
 - `logger.warn(...)`: for warnings
-- `logger.info(...)`: for __important__ information messages. These messages are displayed by default. Only use this for messages that the user really needs to see
-- `logger.log(...)`: for __unimportant__ information messages. These messages are displayed only when user had opted-in to see them
+- `logger.info(...)`: for **important** information messages. These messages are displayed by default. Only use this for messages that the user really needs to see
+- `logger.log(...)`: for **unimportant** information messages. These messages are displayed only when user had opted-in to see them
 - `logger.debug(...)`: for debugging information. These messages are displayed only when user had opted-in to see debug logging for specific modules
-- `logger.trace()`:  to display a stack trace. Displayed like `logger.debug`
+- `logger.trace()`: to display a stack trace. Displayed like `logger.debug`
 - `logger.group(...)`: to group messages. Displayed collapsed like `logger.log`
 - `logger.groupEnd()`: to end a logging group
-- `logger.groupCollapsed(...)`:  to group messages together. Displayed collapsed like `logger.log`. Displayed expanded when logging level is set to `'verbose'` or `'debug'`.
-- `logger.status`:  writes a temporary message, setting a new status, overrides the previous one
+- `logger.groupCollapsed(...)`: to group messages together. Displayed collapsed like `logger.log`. Displayed expanded when logging level is set to `'verbose'` or `'debug'`.
+- `logger.status`: writes a temporary message, setting a new status, overrides the previous one
 - `logger.clear()`: to print a horizontal line. Displayed like `logger.log`
 - `logger.profile(...)`, `logger.profileEnd(...)`: to capture a profile. Delegated to `console.profile` when supported
 
@@ -53,7 +86,7 @@ Runtime logger API is only intended to be used as a development tool, it is not 
 const logging = require('webpack/lib/logging/runtime');
 logging.configureDefaultLogger({
   level: 'log',
-  debug: /something/
+  debug: /something/,
 });
 ```
 

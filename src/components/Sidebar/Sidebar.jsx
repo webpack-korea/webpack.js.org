@@ -1,10 +1,8 @@
 // Import External Dependencies
-import React from 'react';
-
-// Import Local Components
 import Shield from '../Shield/Shield';
 import SidebarItem from '../SidebarItem/SidebarItem';
 import Print from '../Print/Print';
+import PropTypes from 'prop-types';
 
 // Load Styling
 import './Sidebar.scss';
@@ -17,17 +15,17 @@ const docs = [
   {
     version: 4,
     url: 'https://v4.webpack.js.org',
-  }
+  },
 ];
 
 const currentDocsVersion = 5;
-
+Sidebar.propTypes = {
+  className: PropTypes.string,
+  pages: PropTypes.array,
+  currentPage: PropTypes.string,
+};
 // Create and export the component
-export default ({
-  className = '',
-  pages,
-  currentPage
-}) => {
+export default function Sidebar({ className = '', pages, currentPage }) {
   let group;
 
   return (
@@ -35,7 +33,10 @@ export default ({
       <div className="sidebar__inner">
         <div className="sidebar__shields">
           <a href="https://github.com/webpack/webpack/releases">
-            <Shield content="github/package-json/v/webpack/webpack" label="webpack" />
+            <Shield
+              content="github/package-json/v/webpack/webpack"
+              label="webpack"
+            />
           </a>
         </div>
         <Print url={currentPage} />
@@ -46,7 +47,9 @@ export default ({
 
           return (
             <div key={page.url}>
-              {displayGroup ? <h4 className="sidebar__group">{group}</h4> : null}
+              {displayGroup ? (
+                <h4 className="sidebar__group">{group}</h4>
+              ) : null}
 
               <SidebarItem
                 index={index}
@@ -59,14 +62,21 @@ export default ({
           );
         })}
         <div className="sidebar__docs-version">
-          You are reading webpack {currentDocsVersion} documentation. Change here to:
+          You are reading webpack {currentDocsVersion} documentation. Change
+          here to:
           <ul>
-            {docs.filter(item => item.version !== currentDocsVersion).map(({version, url}) => <li key={`webpack-${version}-docs`}>
-              <a rel="nofollow" href={url}>webpack {version} documentation</a>
-            </li>)}
+            {docs
+              .filter((item) => item.version !== currentDocsVersion)
+              .map(({ version, url }) => (
+                <li key={`webpack-${version}-docs`}>
+                  <a rel="nofollow" href={url}>
+                    webpack {version} documentation
+                  </a>
+                </li>
+              ))}
           </ul>
         </div>
       </div>
     </nav>
   );
-};
+}

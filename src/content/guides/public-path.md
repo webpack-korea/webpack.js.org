@@ -1,6 +1,6 @@
 ---
 title: Public Path
-sort: 22
+sort: 23
 contributors:
   - rafaelrinaldi
   - chrisVillanueva
@@ -8,7 +8,6 @@ contributors:
 ---
 
 The `publicPath` configuration option can be quite useful in a variety of scenarios. It allows you to specify the base path for all the assets within your application.
-
 
 ## Use Cases
 
@@ -20,7 +19,7 @@ In development for example, we might have an `assets/` folder that lives on the 
 
 To approach this problem you can easily use a good old environment variable. Let's say we have a variable `ASSET_PATH`:
 
-``` js
+```js
 import webpack from 'webpack';
 
 // Try the environment variable, otherwise use root
@@ -59,3 +58,5 @@ W> Be aware that if you use ES6 module imports in your entry file the `__webpack
 import './public-path';
 import './app';
 ```
+
+T> When using `web` or `web-worker` target, `publicPath` defaults to `'auto'` which will automatically determine the public path from either `import.meta.url`, `document.currentScript`, `<script />` or `self.location`.

@@ -1,55 +1,56 @@
 const path = require('path');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-
+const webpack = require('webpack');
+const h = require('hastscript');
+const remarkResponsiveTable = require('./src/remark-plugins/remark-responsive-table/remark-responsive-table.js');
 const mdPlugins = [
+  require('remark-gfm'),
   require('remark-slug'),
+  remarkResponsiveTable,
+  require('remark-emoji'),
   [
-    require('remark-custom-blockquotes'),
+    require('./src/remark-plugins/remark-custom-asides/index.js'),
     {
       mapping: {
         'T>': 'tip',
         'W>': 'warning',
-        '?>': 'todo'
-      }
-    }
+        '?>': 'todo',
+      },
+    },
   ],
   [
     require('remark-autolink-headings'),
     {
-      behaviour: 'append'
-    }
+      behavior: 'append',
+      content() {
+        return [h('span.header-link')];
+      },
+    },
   ],
-  [
-    require('remark-responsive-tables'),
-    {
-      classnames: {
-        title: 'title',
-        description: 'description',
-        content: 'content',
-        mobile: 'mobile',
-        desktop: 'desktop'
-      }
-    }
-  ],
-  require('remark-refractor')
+  require('remark-refractor'),
 ];
 
-module.exports = (env = {}) => ({
+module.exports = ({ ssg = false }) => ({
   context: path.resolve(__dirname, './src'),
-  entry: {
-    index: './index.jsx',
-    vendor: [
-      'react', // Replace with preact or inferno
-      'react-dom', // Replace with preact or inferno
-      'react-router-dom'
-    ]
+  cache: {
+    type: 'filesystem',
+    buildDependencies: {
+      config: [__filename],
+    },
+    cacheDirectory: path.resolve(__dirname, '.cache/webpack'),
   },
   resolve: {
-    symlinks: false,
-    extensions: ['.js', '.jsx', '.scss']
+    extensions: ['.js', '.jsx', '.scss'],
+    fallback: {
+      path: require.resolve('path-browserify'),
+    },
   },
   module: {
     rules: [
+      {
+        test: /react-spring/,
+        sideEffects: true,
+      },
       {
         test: /\.mdx$/,
         use: [
@@ -57,97 +58,96 @@ module.exports = (env = {}) => ({
           {
             loader: '@mdx-js/loader',
             options: {
-              mdPlugins
-            }
-          }
-        ]
+              remarkPlugins: mdPlugins,
+            },
+          },
+        ],
       },
       {
         test: /\.md$/,
-        use: {
-          loader: 'remark-loader',
-          options: {
-            plugins: mdPlugins
-          }
-        }
-      },
-      {
-        test: /\.font.js$/,
         use: [
-          MiniCssExtractPlugin.loader,
-          'css-loader',
           {
-            loader: 'fontgen-loader',
-            options: { embed: true }
-          }
-        ]
+            loader: 'html-loader',
+          },
+          {
+            loader: 'remark-loader',
+            options: {
+              remarkOptions: {
+                plugins: [...mdPlugins, require('remark-html')],
+              },
+            },
+          },
+        ],
       },
       {
         test: /\.jsx?$/,
         exclude: /node_modules/,
-        use: [
-          'babel-loader',
-          {
-            loader: 'eslint-loader',
-            options: { fix: true }
-          }
-        ]
+        use: ['babel-loader'],
       },
       {
         test: /\.css$/,
-        use: [
-          MiniCssExtractPlugin.loader,
-          'css-loader'
-        ]
+        use: [MiniCssExtractPlugin.loader, 'css-loader', 'postcss-loader'],
       },
       {
         test: /\.scss$/,
         use: [
           MiniCssExtractPlugin.loader,
           'css-loader',
-          {
-            loader: 'postcss-loader',
-            options: {
-              plugins: () => [
-                require('autoprefixer')
-              ],
-            }
-          },
+          'postcss-loader',
           {
             loader: 'sass-loader',
             options: {
-              includePaths: [ path.join('./src/styles/partials') ]
-            }
-          }
-        ]
+              sassOptions: {
+                includePaths: [path.join('./src/styles/partials')],
+              },
+            },
+          },
+        ],
       },
       {
         test: /\.woff2?$/,
-        use: {
-          loader: 'file-loader',
-          options: {
-            prefix: 'font/'
-          }
-        }
+        type: 'asset/resource',
+        generator: {
+          filename: 'font/[name].[hash][ext][query]',
+          emit: ssg !== true,
+        },
       },
       {
-        test: /\.(jpg|png|svg|ico)$/,
-        use: 'file-loader'
-      }
-    ]
+        test: /\.(jpg|jpeg|png|ico)$/i,
+        type: 'asset/resource',
+        generator: {
+          filename: '[name].[hash][ext][query]',
+          emit: ssg !== true,
+        },
+      },
+      {
+        test: /\.svg$/i,
+        type: 'asset/resource',
+        exclude: [path.resolve(__dirname, 'src/styles/icons')],
+        generator: {
+          filename: '[name].[hash][ext][query]',
+          emit: ssg !== true,
+        },
+      },
+      {
+        test: /\.svg$/i,
+        use: ['@svgr/webpack'],
+        include: [path.resolve(__dirname, 'src/styles/icons')],
+      },
+    ],
   },
   plugins: [
     new MiniCssExtractPlugin({
-      filename: '[chunkhash].css'
-    })
+      filename: '[name].[contenthash].css',
+    }),
+    new webpack.DefinePlugin({
+      // https://github.com/algolia/algoliasearch-client-javascript/issues/764
+      'process.env.RESET_APP_DATA_TIMER': JSON.stringify(''), // fix for algoliasearch
+    }),
   ],
-  stats: {
-    children: false
-  },
   output: {
     path: path.resolve(__dirname, './dist'),
     publicPath: '/',
     filename: '[name].bundle.js',
-    chunkFilename: '[name].[chunkhash].chunk.js'
-  }
+  },
 });

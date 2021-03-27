@@ -1,6 +1,7 @@
 // Import External Dependencies
-import React from 'react';
+import { Component } from 'react';
 import Banner from 'react-banner';
+import PropTypes from 'prop-types';
 
 // Import Components
 import Link from '../Link/Link';
@@ -10,42 +11,60 @@ import Dropdown from '../Dropdown/Dropdown';
 // Import helpers
 import isClient from '../../utilities/is-client';
 
+// Import constants
+import { THEME } from '../../constants/theme';
+
 // Load Styling
 import 'docsearch.js/dist/cdn/docsearch.css';
 import './Navigation.scss';
 import './Search.scss';
 
-const onSearch = () => {};
+import GithubIcon from '../../styles/icons/github.svg';
+import TwitterIcon from '../../styles/icons/twitter.svg';
+import StackOverflowIcon from '../../styles/icons/stack-overflow.svg';
 
-export default class Navigation extends React.Component {
+const onSearch = () => {};
+const { DARK, LIGHT } = THEME;
+
+export default class Navigation extends Component {
+  static propTypes = {
+    pathname: PropTypes.string,
+    links: PropTypes.array,
+    toggleSidebar: PropTypes.func,
+    theme: PropTypes.string,
+    switchTheme: PropTypes.func,
+  };
   render() {
-    let { pathname, links, toggleSidebar } = this.props;
+    const { pathname, links, toggleSidebar, theme, switchTheme } = this.props;
+    const themeSwitcher = () => switchTheme(theme === DARK ? LIGHT : DARK);
 
     return (
       <Banner
         onSearch={onSearch}
         blockName="navigation"
-        logo={ <Logo light={ true } /> }
-        url={ pathname }
+        logo={<Logo light={true} />}
+        url={pathname}
         items={[
           ...links,
           {
             title: 'GitHub Repository',
             url: 'https://github.com/webpack/webpack',
             className: 'navigation__item--icon',
-            content: <i aria-hidden="true" className="icon-github" />
+            content: <GithubIcon aria-hidden="true" fill="#fff" width={16} />,
           },
           {
             title: 'webpack on Twitter',
             url: 'https://twitter.com/webpack',
             className: 'navigation__item--icon',
-            content: <i aria-hidden="true" className="icon-twitter" />
+            content: <TwitterIcon aria-hidden="true" fill="#fff" width={16} />,
           },
           {
             title: 'webpack on Stack Overflow',
             url: 'https://stackoverflow.com/questions/tagged/webpack',
             className: 'navigation__item--icon',
-            content: <i aria-hidden="true" className="icon-stack-overflow" />
+            content: (
+              <StackOverflowIcon aria-hidden="true" fill="#fff" width={16} />
+            ),
           },
           {
             className: 'navigation__item--icon',
@@ -53,14 +72,38 @@ export default class Navigation extends React.Component {
               <Dropdown
                 className="navigation__languages"
                 items={[
-                  { title: 'English', url: 'https://webpack.js.org/' },
-                  { lang: 'zh', title: '中文', url: 'https://webpack.docschina.org/' }
-                ]} />
-            )
-          }
+                  {
+                    title: 'English',
+                    url: 'https://webpack.js.org/',
+                  },
+                  {
+                    lang: 'zh',
+                    title: '中文',
+                    url: 'https://webpack.docschina.org/',
+                  },
+                ]}
+              />
+            ),
+          },
+          {
+            className: 'navigation__item--icon',
+            content: (
+              <button
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                }}
+                onClick={themeSwitcher}
+              >
+                {theme === DARK ? '🌙' : '☀️'}
+              </button>
+            ),
+          },
         ]}
-        link={ Link }
-        onMenuClick={ toggleSidebar } />
+        link={Link}
+        onMenuClick={toggleSidebar}
+      />
     );
   }
 
@@ -71,7 +114,7 @@ export default class Navigation extends React.Component {
       DocSearch({
         apiKey: 'fac401d1a5f68bc41f01fb6261661490',
         indexName: 'webpack-js-org',
-        inputSelector: '.navigation-search__input'
+        inputSelector: '.navigation-search__input',
       });
     }
   }

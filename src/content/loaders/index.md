@@ -8,12 +8,12 @@ contributors:
   - EugeneHlushko
   - hemal7735
   - snitin315
+  - anshumanv
 ---
 
 webpack enables use of [loaders](/concepts/loaders) to preprocess files. This allows you to bundle any static resource way beyond JavaScript. You can easily write your own loaders using Node.js.
 
 Loaders are activated by using `loadername!` prefixes in `require()` statements, or are automatically applied via regex from your webpack configuration – see [configuration](/concepts/loaders/#configuration).
-
 
 ## Files
 
@@ -23,12 +23,9 @@ Loaders are activated by using `loadername!` prefixes in `require()` statements,
 - [`file-loader`](/loaders/file-loader) Emits the file into the output folder and returns the (relative) URL
 - [`ref-loader`](https://www.npmjs.com/package/ref-loader) Create dependencies between any files manually
 
-
 ## JSON
 
-- [`json5-loader`](/loaders/json5-loader) Loads and transpiles a [JSON 5](https://json5.org/) file
 - [`cson-loader`](https://github.com/awnist/cson-loader) Loads and transpiles a [CSON](https://github.com/bevry/cson#what-is-cson) file
-
 
 ## Transpiling
 
@@ -40,7 +37,6 @@ Loaders are activated by using `loadername!` prefixes in `require()` statements,
 - [`fengari-loader`](https://github.com/fengari-lua/fengari-loader/) Loads Lua code using [fengari](https://fengari.io/)
 - [`elm-webpack-loader`](https://github.com/elm-community/elm-webpack-loader) Loads [Elm](https://elm-lang.org/) like JavaScript
 
-
 ## Templating
 
 - [`html-loader`](/loaders/html-loader) Exports HTML as string, require references to static resources
@@ -51,6 +47,7 @@ Loaders are activated by using `loadername!` prefixes in `require()` statements,
 - [`handlebars-loader`](https://github.com/pcardune/handlebars-loader) Compiles Handlebars to HTML
 - [`markup-inline-loader`](https://github.com/asnowwolf/markup-inline-loader) Inline SVG/MathML files to HTML. It’s useful when applying icon font or applying CSS animation to SVG.
 - [`twig-loader`](https://github.com/zimmo-be/twig-loader) Compiles Twig templates and returns a function
+- [`remark-loader`](https://github.com/webpack-contrib/remark-loader) Load markdown through `remark` with built-in image resolution
 
 ## Styling
 
@@ -59,8 +56,7 @@ Loaders are activated by using `loadername!` prefixes in `require()` statements,
 - [`less-loader`](/loaders/less-loader) Loads and compiles a LESS file
 - [`sass-loader`](/loaders/sass-loader) Loads and compiles a SASS/SCSS file
 - [`postcss-loader`](/loaders/postcss-loader) Loads and transforms a CSS/SSS file using [PostCSS](http://postcss.org)
-- [`stylus-loader`](https://github.com/shama/stylus-loader) Loads and compiles a Stylus file
-
+- [`stylus-loader`](/loaders/stylus-loader/) Loads and compiles a Stylus file
 
 ## Linting && Testing
 
