@@ -1,8 +1,5 @@
 name: workflow for S3 Deploy
-on:
-  push
-  pull_request:
-    types: [closed]
+on: [push]
 jobs:
   run:
     runs-on: ubuntu-latest
