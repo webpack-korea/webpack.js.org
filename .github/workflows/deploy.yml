@@ -1,5 +1,6 @@
 name: workflow for S3 Deploy
 on:
+  push
   pull_request:
     types: [closed]
 jobs:
