@@ -223,6 +223,7 @@ function Site(props) {
             property="og:image"
             content={`https://webpack.js.org${OgImage}`}
           />
+          <meta name="referrer" content="origin" />
           <meta property="twitter:card" content="summary" />
           <meta property="twitter:site" content="@webpack" />
           <meta property="twitter:creator" content="@webpack" />
