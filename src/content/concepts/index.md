@@ -1,5 +1,5 @@
 ---
-title: Concepts
+title: 개념
 sort: -1
 contributors:
   - TheLarkInn
