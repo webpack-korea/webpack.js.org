@@ -1,5 +1,5 @@
 ---
-title: Entry Points
+title: 엔트리 포인트(Entry Points)
 sort: 1
 contributors:
   - TheLarkInn
@@ -12,11 +12,15 @@ contributors:
   - adyjs
 ---
 
+[Getting Started](/guides/getting-started/#using-a-configuration)에서 언급했듯이 여러분의 웹팩 설정에는 `entry` 속성을 정의하는 여러 가지 방법이 있습니다. 여기서는 `entry` 속성을 설정**할 수 있는** 방법과 이것이 유용한 이유를 설명합니다.
+
+<!--
 As mentioned in [Getting Started](/guides/getting-started/#using-a-configuration), there are multiple ways to define the `entry` property in your webpack configuration. We will show you the ways you **can** configure the `entry` property, in addition to explaining why it may be useful to you.
+-->
 
-## Single Entry (Shorthand) Syntax
+## 단일 엔트리 (단축) 문법
 
-Usage: `entry: string | [string]`
+사용법: `entry: string | [string]`
 
 **webpack.config.js**
 
@@ -26,7 +30,11 @@ module.exports = {
 };
 ```
 
+<!--
 The single entry syntax for the `entry` property is a shorthand for:
+-->
+
+위에서 본 `entry` 속성의 단일 엔트리 구문은 다음 내용을 축약한 형태입니다.
 
 **webpack.config.js**
 
@@ -38,7 +46,11 @@ module.exports = {
 };
 ```
 
+<!--
 We can also pass an array of file paths to the `entry` property which creates what is known as a **"multi-main entry"**. This is useful when you would like to inject multiple dependent files together and graph their dependencies into one "chunk".
+-->
+
+`entry` 속성에 파일 경로의 배열을 전달하여 **"다중 메인 엔트리"** 라 알려진 것을 생성할 수 있습니다. 이는 하나의 "chunk(덩어리)"를 의존성 그래프로 구성하고 여러 의존성 파일을 함께 주입할 때 유용합니다.
 
 **webpack.config.js**
 
@@ -51,11 +63,15 @@ module.exports = {
 };
 ```
 
+<!--
 Single Entry Syntax is a great choice when you are looking to quickly setup a webpack configuration for an application or tool with one entry point (i.e. a library). However, there is not much flexibility in extending or scaling your configuration with this syntax.
+-->
 
-## Object Syntax
+단일 엔트리 구문은 하나의 진입점을 갖는 애플리케이션 또는 도구(예를 들어 라이브러리)의 웹팩 설정을 빠르게 설정할 때 아주 좋은 선택입니다. 그렇지만 이 구문은 여러분의 설정을 확장하고 넓히기에 그다지 유연하지 않습니다.
 
-Usage: `entry: { <entryChunkName> string | [string] } | {}`
+## 객체 구문
+
+사용법: `entry: { <entryChunkName> string | [string] } | {}`
 
 **webpack.config.js**
 
@@ -68,6 +84,7 @@ module.exports = {
 };
 ```
 
+<!--
 The object syntax is more verbose. However, this is the most scalable way of defining entry/entries in your application.
 
 T> **"Scalable webpack configurations"** are ones that can be reused and combined with other partial configurations. This is a popular technique used to separate concerns by environment, build target, and runtime. They are then merged using specialized tools like [webpack-merge](https://github.com/survivejs/webpack-merge).
@@ -83,6 +100,23 @@ An object with entry point description. You can specify the following properties
 - `import`: Module(s) that are loaded upon startup.
 - `library`: Specify [library options](/configuration/output/#outputlibrary) to bundle a library from current entry.
 - `runtime`: The name of the runtime chunk. If set, a runtime chunk with this name is created otherwise an existing entry point is used as runtime.
+-->
+
+객체 구문은 조금 더 장황합니다. 그러나 이것은 여러분의 애플리케이션에 엔트리들을 정의하는 방법 중 가장 확장성 있는 방법입니다.
+
+T> **"확장 가능한 웹팩 설정"** 은 재사용이 가능하며 다른 부분별 설정들과 잘 결합할 수 있는 설정입니다. 이것은 환경, 빌드 대상, 런타임에 의한 관심사 분리에 사용되는 보편적인 기술입니다. 이들은 이후 [webpack-merge](https://github.com/survivejs/webpack-merge)와 같은 특수한 도구를 이용하여 합쳐집니다.
+
+T> 플러그인에 의해 생성된 엔트리 포인트만 있을 땐 `entry`에 빈 객체 `{}` 를 전달할 수 있습니다.
+
+### 엔트리 설명 객체
+
+엔트리 포인트를 설명하는 객체입니다. 여러분은 아래의 속성들을 명시할 수 있습니다.
+
+- `dependOn`: 현재의 엔트리 포인트가 의존하는 엔트리 포인트들입니다. 그것들은 이 엔트리 포인트가 로드되기 전에 반드시 로드되어야만 합니다.
+- `filename`: 디스크에 저장될 아웃풋 파일의 각 이름을 지정합니다.
+- `import`: 시작과 동시에 로드될 모듈(들).
+- `library`: 현재 엔트리로부터 번들 될 [라이브러리 옵션](/configuration/output/#outputlibrary)을 지정합니다.
+- `runtime`: 런타임 chunk의 이름입니다. 만약 설정되면 이 이름의 런타임 chunk가 생성되고, 그렇지 않다면 기존 엔트리 포인트가 런타임으로 사용됩니다.
 
 **webpack.config.js**
 
@@ -98,7 +132,11 @@ module.exports = {
 };
 ```
 
+<!--
 `runtime` and `dependOn` should not be used together on a single entry, so the following config is invalid and would throw an error:
+-->
+
+`runtime`과 `dependOn`는 단일 엔트리에 함께 사용하면 안 되므로, 다음의 설정은 잘못된 것이며 오류가 발생합니다.
 
 **webpack.config.js**
 
@@ -115,7 +153,11 @@ module.exports = {
 };
 ```
 
+<!--
 Make sure `runtime` must not point to an existing entry point name, for example the below config would throw an error:
+-->
+
+`runtime`이 기존의 엔트리 포인트를 가리키고 있는 게 아닌지 확인하세요. 예를 들어, 아래의 설정은 오류가 발생합니다.
 
 ```javascript
 module.exports = {
@@ -129,7 +171,11 @@ module.exports = {
 };
 ```
 
+<!--
 Also `dependOn` must not be circular, the following example again would throw an error:
+-->
+
+또한 `dependOn`은 순환되지 말아야 하며, 다음의 예시에서도 오류가 발생합니다.
 
 ```javascript
 module.exports = {
@@ -146,11 +192,15 @@ module.exports = {
 };
 ```
 
-## Scenarios
+## 시나리오들
 
+<!--
 Below is a list of entry configurations and their real-world use cases:
+-->
 
-### Separate App and Vendor Entries
+다음은 엔트리 구성 목록과 실제 사용 사례입니다.
+
+### 앱과 Vendor 엔트리의 분리
 
 **webpack.config.js**
 
@@ -183,13 +233,21 @@ module.exports = {
 };
 ```
 
+<!--
 **What does this do?** We are telling webpack that we would like 2 separate entry points (like the above example).
 
 **Why?** With this you can import required libraries or files that aren't modified (e.g. Bootstrap, jQuery, images, etc) inside `vendor.js` and they will be bundled together into their own chunk. Content hash remains the same, which allows the browser to cache them separately thereby reducing load time.
 
 T> In webpack version < 4 it was common to add vendors as a separate entry point to compile it as a separate file (in combination with the `CommonsChunkPlugin`). <br><br> This is discouraged in webpack 4. Instead, the [`optimization.splitChunks`](/configuration/optimization/#optimizationsplitchunks) option takes care of separating vendors and app modules and creating a separate file. **Do not** create an entry for vendors or other stuff that is not the starting point of execution.
+-->
 
-### Multi Page Application
+**이것은 무엇을 합니까?** 우리는 위의 예시와 같이 2개의 별도 엔트리 포인트를 위한 웹팩에 대해 말하고 있습니다.
+
+**이유는?** 이를 통해 여러분은 'vendor.js' 내에서 수정되지 않은 필수 라이브러리 또는 파일(예를 들어 부트스트랩, jQuery, images 등)을 가져올 수 있으며 이러한 라이브러리는 자신의 chunk로 함께 번들됩니다. 콘텐츠 해시값은 동일하게 남아서, 브라우저가 별도로 캐시하여 로드 시간을 줄일 수 있습니다.
+
+T> 웹팩 버전 4 미만에서는 vendors를 별도의 엔트리 포인트로 추가하여 CommonsChunkPlugin를 이용해 별도의 파일로 컴파일하는 것이 일반적이었습니다. <br><br> 이는 webpack 4 에서는 권장되지 않습니다. 대신, [`optimization.splitChunks`](/configuration/optimization/#optimizationsplitchunks) 옵션이 vendors와 앱 모듈들을 분리하고 별도의 파일을 생성합니다. 실행의 시작점이 아닌 vendors 또는 다른 것들에 대한 엔트리를 생성**하지 마세요**.
+
+### 다중 페이지 애플리케이션
 
 **webpack.config.js**
 
@@ -203,8 +261,16 @@ module.exports = {
 };
 ```
 
+<!--
 **What does this do?** We are telling webpack that we would like 3 separate dependency graphs (like the above example).
 
 **Why?** In a multi-page application, the server is going to fetch a new HTML document for you. The page reloads this new document and assets are redownloaded. However, this gives us the unique opportunity to do things like using [`optimization.splitChunks`](/configuration/optimization/#optimizationsplitchunks) to create bundles of shared application code between each page. Multi-page applications that reuse a lot of code/modules between entry points can greatly benefit from these techniques, as the number of entry points increases.
 
 T> As a rule of thumb: Use exactly one entry point for each HTML document. See the issue [described here](https://bundlers.tooling.report/code-splitting/multi-entry/#webpack) for more details.
+-->
+
+**이건 무엇을 하나요?** 우리는 위의 예시와 같이 3개의 개별 종속성 그래프를 위한 웹팩에 대해 말하고 있습니다.
+
+**이유는?** 다중 페이지 애플리케이션에서, 서버는 여러분에게 새로운 HTML 문서를 가져올 겁니다. 페이지가 새 문서를 다시 로드하고, assets이 재다운로드됩니다. 그러나, 우리에게 각 페이지 사이에 공유된 애플리케이션 코드의 번들을 만들기 위해 [`optimization.splitChunks`](/configuration/optimization/#optimizationsplitchunks)를 사용하는 것과 같은 특별한 기회를 제공합니다. 엔트리 포인트 사이에 많은 코드와 모듈들을 재사용하는 다중 페이지 애플리케이션은 엔트리 포인트가 늘어날수록 이러한 기술들로부터 훌륭한 이점을 누릴 수 있습니다.
+
+T> 원칙적으로 각 HTML 문서에 대해 정확히 하나의 진입점을 사용하세요. 자세한 내용은 [여기에 설명된](https://bundlers.tooling.report/code-splitting/multi-entry/#webpack) 이슈를 참조하세요.
